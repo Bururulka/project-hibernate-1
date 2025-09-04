@@ -26,12 +26,14 @@ public class PlayerRepositoryDB implements IPlayerRepository {
 
     public PlayerRepositoryDB() {
         Properties properties = new Properties();
-        properties.put(Environment.DRIVER, "org.postgresql.Driver");
-        properties.put(Environment.URL, "jdbc:postgresql://localhost:5433/rpg");
         properties.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQLDialect");
+//        properties.put(Environment.DRIVER, "org.postgresql.Driver");
+//        properties.put(Environment.URL, "jdbc:postgresql://localhost:5433/postgres?currentSchema=rpg");
         properties.put(Environment.USER, "user");
         properties.put(Environment.PASS, "password");
         properties.put(Environment.HBM2DDL_AUTO, "update");
+        properties.put(Environment.DRIVER, "com.p6spy.engine.spy.P6SpyDriver");
+        properties.put(Environment.URL, "jdbc:p6spy:postgresql://localhost:5433/postgres?currentSchema=rpg");
         this.sessionFactory = new Configuration()
                 .addProperties(properties)
                 .addAnnotatedClass(Player.class)
@@ -40,9 +42,8 @@ public class PlayerRepositoryDB implements IPlayerRepository {
 
     @Override
     public List<Player> getAll(int pageNumber, int pageSize) {
-        String query = "select * from rpg.player";
         try (Session session = sessionFactory.openSession()) {
-            NativeQuery<Player> nQuery = session.createNativeQuery(query, Player.class);
+            NativeQuery<Player> nQuery = session.createNativeQuery("select * from rpg.player ORDER BY id", Player.class);
             nQuery.setFirstResult(pageNumber * pageSize);
             nQuery.setMaxResults(pageSize);
             return nQuery.list();
